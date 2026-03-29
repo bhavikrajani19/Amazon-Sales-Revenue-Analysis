@@ -1,0 +1,65 @@
+#SQL CODES
+
+
+
+1.*IMPORTANT* total revenue, total unit sold in every discount brackets to know crucial insights:- SELECT 
+    CASE 
+        WHEN ((listprice - price) / listprice) * 100 < 20 THEN '0-20% Off'
+        WHEN ((listprice - price) / listprice) * 100 BETWEEN 20 AND 39.99 THEN '20-40% Off'
+        WHEN ((listprice - price) / listprice) * 100 BETWEEN 40 AND 59.99 THEN '40-60% Off'
+        WHEN ((listprice - price) / listprice) * 100 BETWEEN 60 AND 79.99 THEN '60-80% Off'
+        ELSE '80%+ Mega Discount'
+    END AS Discount_Bucket,
+    SUM(bought_last_month) AS Total_Units_Sold,
+    COUNT(*) AS Number_of_Products,
+    sum(price * bought_last_month) as total_revenue_last_month$
+FROM products
+GROUP BY Discount_Bucket
+
+2.To find top total last monthsales by top sales categoriees:- select title as category , sum(price * Bought_Last_Month) as total_sales_last_month from products 
+group by title order by total_sales_last_month DESC; 
+
+
+
+3.products with highest sales and most reviews and 5 star reviews:- select title as category , reviews as total_reviews, stars,sum(price * Bought_Last_Month) as total_sales_last_month from products 
+group by title,reviews,stars having reviews > 100 and stars > 4 order by total_sales_last_month DESC;
+
+
+4.Total Sales:- select sum(price) as total_sales from products;
+
+5. product that got discounted and became bestsell selling with highest stars and more than 1000 reviews more than 10000 last month top 20:- select * from products where price < listprice and reviews > 100 and stars > 4 and bestsell = 'true' and bought_last_month > 10000 order by
+bought_last_month DESC limit 20;
+
+6.top 100 product with most reviews, most stars,bestsell between(10$ - 100$):-  select * from products where stars > 4 and bestsell = 'true' and price between 10 and 100 order by reviews DESC limit 100;
+
+7.top 100 product with most reviews, most stars, bestsell between(100$ - 500$):- select * from products where stars = 5 and bestsell = 'true' and price between 100 and 500  order by reviews DESC limit 100;
+
+
+8. product with good rating but low reviews hidden gems:- select * from products where stars > 4.5 and reviews between 10 and 15;
+
+9. worst rated products that need to remove:- 
+select * from products where stars <= 2 and reviews > 100
+
+10. ranking products on basis of stars/rating:- select title,
+rank() over(order by stars DESC) as ranking
+from products;
+
+11. total last month sales Electronics VS Home Decor:- 
+with total_e_market as (select sum(price * bought_last_month) as total_electronic_market
+from products
+where title like '%electronics%'),
+
+home_decor as (select sum(price * bought_last_month) as total_home_market
+from products
+where title like '%home decor%')
+select * from total_e_market,home_decor;
+
+12. total product listing by category:- select category_name,count(title) from products join categories on id = category group by category_name;
+
+13.avg rating and reviews of best sell product and non best sell product:- with bestsell as (select avg(stars) as average_rating, avg(reviews) as average_revirews_per_products from products where bestsell = 'True'),
+
+nonbestsell as (select avg(stars) as average_rating, avg(reviews) as average_revirews_per_products from products where bestsell = 'False')
+
+select * from bestsell,nonbestsell;
+
+ORDER BY Total_Units_Sold DESC;
